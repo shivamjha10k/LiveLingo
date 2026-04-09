@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Livestream | LiveLingo</title>
+</head>
+<body>
+    <h4>Create New Livestream</h4>
+    <hr>
+
+    <form action="/create-new-livestream" method="POST">
+        <label>Title</label>
+
+        <input class="form-control" type="text" name="title" required placeholder="Title">
+        <label>Description</label>
+
+        <textarea class="form-control" required name="description" placeholder="Description"></textarea>
+        
+                <label>Start Date</label>
+<input class="form-control" name="start_date" type="date" required>
+        <label>End Date</label>
+        
+<input class="form-control" name="end_date" type="date" required>
+                <label>Start Time</label>
+
+
+<input class="form-control" name="start_time" type="time" required>
+        
+        <label>End Time</label>
+
+<input class="form-control" name="end_time" type="time" required>
+        <input class="form-control" type="submit" value="Create">
+    </form>
+</body>
+</html>

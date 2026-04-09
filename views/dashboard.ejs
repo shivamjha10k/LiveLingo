@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Dashboard | LiveLingo</title>
+  </head>
+  <body>
+    <center>
+      <h1>LiveLingo Livestream</h1>
+      <hr />
+
+      <% if (streamURL) { %>
+      <video width="800" height="500" controls autoplay muted playsinline>
+        <source src="<%= streamURL %>" type="application/x-mpegURL" />
+        Your browser does not support HLS playback.
+      </video>
+      <% } else { %>
+      <p>No live stream configured.</p>
+      <p>
+        Set <code>AWS_IVS_PLAYBACK_URL</code> in <code>.env</code> or enable
+        <code>TEST_MODE=true</code>.
+      </p>
+      <% } %>
+
+      <% if (testMode) { %>
+      <p><strong>Test mode is enabled.</strong></p>
+      <% } %>
+    </center>
+  </body>
+</html>

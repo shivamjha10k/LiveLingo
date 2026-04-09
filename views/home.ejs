@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LiveLingo - Real-time Translation SPA</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@videojs/html/cdn/video-minimal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#c6c6c6",
+                        "surface-tint": "#5f5e5e",
+                        "on-tertiary-fixed-variant": "#e4e2e2",
+                        "tertiary-container": "#757474",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#3c3b3b",
+                        "on-primary-fixed-variant": "#e5e2e1",
+                        "on-secondary-container": "#1b1c1c",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary": "#e4e2e2",
+                        "outline": "#777777",
+                        "on-secondary-fixed-variant": "#3b3b3b",
+                        "tertiary-fixed": "#5e5e5e",
+                        "primary-fixed": "#5f5e5e",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-primary-container": "#ffffff",
+                        "on-tertiary-fixed": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "secondary": "#5f5e5e",
+                        "secondary-container": "#d6d4d3",
+                        "surface-container-low": "#f3f3f3",
+                        "primary-fixed-dim": "#474746",
+                        "surface": "#f9f9f9",
+                        "inverse-surface": "#2f3131",
+                        "background": "#f9f9f9",
+                        "on-primary-fixed": "#ffffff",
+                        "on-tertiary-container": "#ffffff",
+                        "surface-container": "#eeeeee",
+                        "tertiary-fixed-dim": "#464747",
+                        "secondary-fixed-dim": "#acabab",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "on-surface-variant": "#474747",
+                        "inverse-primary": "#c8c6c5",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed": "#c8c6c6",
+                        "on-primary": "#e5e2e1",
+                        "primary": "#000000",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "on-error-container": "#410002",
+                        "tertiary": "#3b3b3b"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; }
+        .headline-font { font-family: 'Manrope', sans-serif; }
+        .script-ghost {
+            position: fixed;
+            font-size: 15rem;
+            color: #474747;
+            opacity: 0.03;
+            z-index: -1;
+            pointer-events: none;
+            user-select: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbars for cleaner SPA feel */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen selection:bg-primary selection:text-on-primary overflow-x-hidden overflow-y-auto flex flex-col"
+data-webrtc-whep-urls='<%- JSON.stringify(webrtcWhepUrls || {}) %>'>
+<!-- Script Ghosts -->
+<div class="script-ghost top-10 -left-10">अ</div>
+<div class="script-ghost bottom-10 -right-10">క</div>
+<div class="script-ghost top-1/2 left-1/4">म</div>
+<!-- TopNavBar -->
+<header class="w-full z-50 bg-white/80 backdrop-blur-xl border-b border-neutral-100 flex-none">
+<nav class="flex justify-between items-center px-4 sm:px-6 lg:px-8 h-14 sm:h-16 max-w-[1440px] mx-auto">
+<div class="flex items-center gap-12">
+<span class="text-xl font-black tracking-tighter text-neutral-950 uppercase font-headline">
+                LiveLingo
+            </span>
+
+</div>
+
+</nav>
+</header>
+<!-- Main SPA Body -->
+<main class="flex-1 flex flex-col max-w-[1440px] mx-auto w-full overflow-hidden min-h-0">
+<!-- Left Column: Primary Video & Controls -->
+<section class="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 overflow-visible min-w-0 min-h-0">
+<!-- Header Section -->
+<div class="flex flex-col gap-4 sm:gap-3 sm:flex-row sm:items-end sm:justify-between">
+<!-- <div class="space-y-1">
+<div class="flex items-center gap-3">
+<span class="bg-error text-white px-2 py-0.5 rounded-sm text-[10px] font-bold tracking-widest uppercase">Live</span>
+</div>
+<p class="text-on-surface-variant text-sm font-body">
+<span id="viewer-location"><%= viewerLocation %></span> •
+<span id="active-listeners-count"><%= initialLiveViewerCountLabel %></span> active listeners
+</p>
+</div> -->
+
+
+</div>
+<!-- Central Player -->
+<div id="player-shell" class="relative h-[260px] sm:h-[380px] lg:h-[520px] bg-black rounded-xl overflow-hidden shadow-2xl group ring-1 ring-black/5">
+<video
+    id="live-video-player"
+    class="w-full h-full object-contain bg-black"
+    src="<%= streamUrls[initialLanguage] %>"
+    playsinline
+    controls
+    autoplay
+    muted
+    preload="auto"
+></video>
+<audio id="webrtc-audio-player" autoplay playsinline></audio>
+<!-- Video Overlay UI -->
+
+<div id="stream-status" class="absolute inset-0 flex items-center justify-center bg-black/75 text-white text-center px-6">
+<p class="text-base sm:text-lg font-semibold tracking-wide">Stream is not live.</p>
+</div>
+
+</div>
+<!-- Stream Selection (SPA Controls) -->
+<div class="space-y-4">
+<div class="flex items-center justify-between border-b border-neutral-100 pb-2">
+<h3 class="text-xs font-black uppercase tracking-widest text-primary">Stream Selection</h3>
+<span class="text-[10px] text-on-surface-variant font-bold">Switching stream in real-time</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<% streamOptions.forEach((option) => { %>
+<button class="stream-option flex flex-col gap-1 p-4 border text-left transition-all hover:border-primary"
+data-language="<%= option.language %>"
+data-stream-url="<%= streamUrls[option.language] || '' %>">
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant"><%= option.badge %></span>
+<span class="text-lg font-headline font-bold"><%= option.label %></span>
+</button>
+<% }); %>
+</div>
+</div>
+</section>
+</main>
+<footer class="w-full min-h-10 px-4 sm:px-8 py-2 bg-white border-t border-neutral-100 flex items-center justify-between flex-none">
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-black uppercase tracking-widest text-neutral-400">© LiveLingo</span>
+</div>
+
+</footer>
+<script>
+    (function () {
+        const initialLanguage = "<%= initialLanguage %>";
+        const webrtcWhepUrls = JSON.parse(document.body.dataset.webrtcWhepUrls || "{}");
+        const useWebrtcTranslatedAudio = "<%= String(useWebrtcTranslatedAudio) %>" === "true";
+        const player = document.getElementById("live-video-player");
+        const streamStatus = document.getElementById("stream-status");
+        const webrtcAudioPlayer = document.getElementById("webrtc-audio-player");
+        const activeListeners = document.getElementById("active-listeners-count");
+        const options = Array.from(document.querySelectorAll(".stream-option"));
+        let webrtcPeerConnection = null;
+        let activeWebrtcLanguage = null;
+        let hlsInstance = null;
+        const webrtcTrackTimeoutMs = 3500;
+        let liveMonitorTimer = null;
+        let lastPlaybackSecond = -1;
+        let lastProgressAt = 0;
+
+        const selectedClasses = ["border-2", "border-primary", "bg-white"];
+        const unselectedClasses = ["border", "border-outline-variant", "bg-surface-container-low"];
+        const disabledClasses = ["opacity-50", "cursor-not-allowed"];
+
+        function setOptionState(button, isSelected) {
+            button.classList.remove(...selectedClasses, ...unselectedClasses);
+            if (isSelected) {
+                button.classList.add(...selectedClasses);
+                const badge = button.querySelector("span:first-child");
+                if (badge) {
+                    badge.classList.remove("text-on-surface-variant");
+                    badge.classList.add("text-primary", "font-black");
+                }
+            } else {
+                button.classList.add(...unselectedClasses);
+                const badge = button.querySelector("span:first-child");
+                if (badge) {
+                    badge.classList.remove("text-primary", "font-black");
+                    badge.classList.add("text-on-surface-variant");
+                }
+            }
+        }
+
+        async function refreshViewerCount(language) {
+            try {
+                const response = await fetch(`/api/ivs/live-viewers?language=${encodeURIComponent(language)}`);
+                if (!response.ok) return;
+
+                const payload = await response.json();
+                if (activeListeners && payload && payload.viewerCountLabel) {
+                    activeListeners.textContent = payload.viewerCountLabel;
+                }
+            } catch (err) {
+                // No-op: keep existing value when API is unavailable.
+            }
+        }
+
+        function setLiveStatus(isLive) {
+            if (!streamStatus) return;
+            streamStatus.style.display = isLive ? "none" : "flex";
+        }
+
+        function markPlaybackProgress() {
+            if (!player) return;
+            const currentSecond = Math.floor(Number(player.currentTime || 0));
+            if (currentSecond !== lastPlaybackSecond || player.readyState >= 3) {
+                lastPlaybackSecond = currentSecond;
+                lastProgressAt = Date.now();
+                setLiveStatus(true);
+            }
+        }
+
+        function evaluateLiveStatus() {
+            if (!player) return;
+            const hasSource = Boolean(player.currentSrc || player.src);
+            if (!hasSource) {
+                setLiveStatus(false);
+                return;
+            }
+
+            if (player.ended) {
+                setLiveStatus(false);
+                return;
+            }
+
+            const now = Date.now();
+            const hasBufferedData = player.readyState >= 2;
+            const hasRecentProgress = lastProgressAt > 0 && now - lastProgressAt < 12000;
+            const isActivelyPlaying = !player.paused && !player.seeking && hasBufferedData;
+
+            setLiveStatus(isActivelyPlaying || hasRecentProgress);
+        }
+
+        function resetLiveMonitor() {
+            lastPlaybackSecond = -1;
+            lastProgressAt = 0;
+            if (liveMonitorTimer) {
+                clearInterval(liveMonitorTimer);
+            }
+            liveMonitorTimer = setInterval(evaluateLiveStatus, 1500);
+            evaluateLiveStatus();
+        }
+
+        function destroyHls() {
+            if (!hlsInstance) return;
+            hlsInstance.destroy();
+            hlsInstance = null;
+        }
+
+        function canUseNativeHls(videoElement) {
+            if (!videoElement || typeof videoElement.canPlayType !== "function") {
+                return false;
+            }
+            return Boolean(
+                videoElement.canPlayType("application/vnd.apple.mpegurl") ||
+                videoElement.canPlayType("application/x-mpegURL")
+            );
+        }
+
+        function wireHlsToPlayer(source) {
+            if (!player) return false;
+
+            const hasM3u8 = /\.m3u8($|[?#])/i.test(source);
+            const shouldUseHlsJs = hasM3u8 && window.Hls && window.Hls.isSupported() && !canUseNativeHls(player);
+
+            if (!shouldUseHlsJs) {
+                player.src = source;
+                player.load();
+                return true;
+            }
+
+            hlsInstance = new window.Hls({
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90,
+            });
+
+            hlsInstance.attachMedia(player);
+            hlsInstance.on(window.Hls.Events.MEDIA_ATTACHED, () => {
+                hlsInstance.loadSource(source);
+            });
+
+            hlsInstance.on(window.Hls.Events.ERROR, (_event, data) => {
+                if (!data || !data.fatal) return;
+
+                if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) {
+                    hlsInstance.startLoad();
+                    return;
+                }
+
+                if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
+                    hlsInstance.recoverMediaError();
+                    return;
+                }
+
+                destroyHls();
+                setLiveStatus(false);
+            });
+
+            return true;
+        }
+
+        function setPlayerSource(url, language) {
+            if (!player) return false;
+
+            const source = String(url || "").trim();
+            destroyHls();
+
+            if (!source) {
+                setLiveStatus(false);
+                player.removeAttribute("src");
+                player.load();
+                return false;
+            }
+
+            player.setAttribute("data-active-language", language);
+            player.controls = true;
+            resetLiveMonitor();
+            return wireHlsToPlayer(source);
+        }
+
+        function waitForIceGatheringComplete(peerConnection, timeoutMs = 3000) {
+            if (!peerConnection || peerConnection.iceGatheringState === "complete") {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                let timeoutId;
+
+                function onStateChange() {
+                    if (peerConnection.iceGatheringState === "complete") {
+                        clearTimeout(timeoutId);
+                        peerConnection.removeEventListener("icegatheringstatechange", onStateChange);
+                        resolve();
+                    }
+                }
+
+                timeoutId = setTimeout(() => {
+                    peerConnection.removeEventListener("icegatheringstatechange", onStateChange);
+                    resolve();
+                }, timeoutMs);
+
+                peerConnection.addEventListener("icegatheringstatechange", onStateChange);
+            });
+        }
+
+        function stopWebrtcAudio() {
+            activeWebrtcLanguage = null;
+
+            if (webrtcPeerConnection) {
+                webrtcPeerConnection.close();
+                webrtcPeerConnection = null;
+            }
+
+            if (webrtcAudioPlayer) {
+                webrtcAudioPlayer.pause();
+                webrtcAudioPlayer.srcObject = null;
+            }
+
+            if (player) {
+                player.muted = false;
+            }
+        }
+
+        async function startWebrtcAudio(language) {
+            const whepUrl = String(webrtcWhepUrls?.[language] || "").trim();
+            if (!whepUrl || !window.RTCPeerConnection || !webrtcAudioPlayer) {
+                stopWebrtcAudio();
+                return false;
+            }
+
+            if (activeWebrtcLanguage === language && webrtcPeerConnection) {
+                return true;
+            }
+
+            stopWebrtcAudio();
+
+            try {
+                const peerConnection = new RTCPeerConnection({
+                    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+                });
+
+                let receivedTrack = false;
+                let trackResolve;
+                const trackPromise = new Promise((resolve) => {
+                    trackResolve = resolve;
+                });
+                const trackTimeout = setTimeout(() => {
+                    trackResolve(false);
+                }, webrtcTrackTimeoutMs);
+
+                peerConnection.addTransceiver("audio", { direction: "recvonly" });
+                peerConnection.addEventListener("track", (event) => {
+                    const [stream] = event.streams || [];
+                    if (!stream) return;
+                    receivedTrack = true;
+                    clearTimeout(trackTimeout);
+                    webrtcAudioPlayer.srcObject = stream;
+                    webrtcAudioPlayer.play().catch(() => {});
+                    trackResolve(true);
+                });
+
+                const offer = await peerConnection.createOffer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: false,
+                });
+                await peerConnection.setLocalDescription(offer);
+                await waitForIceGatheringComplete(peerConnection);
+
+                const response = await fetch(whepUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/sdp",
+                    },
+                    body: peerConnection.localDescription?.sdp || "",
+                });
+
+                if (!response.ok) {
+                    throw new Error(`WHEP handshake failed: ${response.status}`);
+                }
+
+                const answerSdp = await response.text();
+                await peerConnection.setRemoteDescription({ type: "answer", sdp: answerSdp });
+
+                const trackReady = await trackPromise;
+                if (!trackReady || !receivedTrack) {
+                    peerConnection.close();
+                    stopWebrtcAudio();
+                    return false;
+                }
+
+                webrtcPeerConnection = peerConnection;
+                activeWebrtcLanguage = language;
+
+                if (player) {
+                    player.muted = true;
+                }
+
+                return true;
+            } catch (err) {
+                stopWebrtcAudio();
+                return false;
+            }
+        }
+
+        async function activateStream(language) {
+            const selectedButton = options.find((button) => button.dataset.language === language);
+            if (!selectedButton) return;
+
+            const selectedUrl = selectedButton.dataset.streamUrl;
+            const playerReady = setPlayerSource(selectedUrl, language);
+            if (playerReady && player) {
+                player.play().catch(() => {});
+            }
+
+            options.forEach((button) => setOptionState(button, button === selectedButton));
+            refreshViewerCount(language);
+
+            // Default behavior keeps translated stream audio/video from the same media URL for lip-sync.
+            if (playerReady && useWebrtcTranslatedAudio && language !== "original") {
+                const webrtcStarted = await startWebrtcAudio(language);
+                if (!webrtcStarted) {
+                    stopWebrtcAudio();
+                    if (player) {
+                        player.muted = false;
+                    }
+                }
+            } else {
+                stopWebrtcAudio();
+                if (player) {
+                    player.muted = false;
+                }
+            }
+        }
+
+        options.forEach((button) => {
+            const streamUrl = button.dataset.streamUrl;
+
+            if (!streamUrl) {
+                button.classList.add(...disabledClasses);
+                button.setAttribute("disabled", "disabled");
+                return;
+            }
+
+            button.addEventListener("click", () => {
+                activateStream(button.dataset.language);
+            });
+        });
+
+        if (player) {
+            player.addEventListener("loadeddata", markPlaybackProgress);
+            player.addEventListener("canplay", markPlaybackProgress);
+            player.addEventListener("playing", markPlaybackProgress);
+            player.addEventListener("timeupdate", markPlaybackProgress);
+            player.addEventListener("waiting", evaluateLiveStatus);
+            player.addEventListener("stalled", evaluateLiveStatus);
+            player.addEventListener("error", evaluateLiveStatus);
+            player.addEventListener("ended", () => setLiveStatus(false));
+        }
+
+        activateStream(initialLanguage);
+    })();
+</script>
+</body></html>

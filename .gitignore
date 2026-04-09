@@ -1,0 +1,15 @@
+node_modules
+.env
+.env.test
+*.docx
+
+# Local benchmark/test artifacts
+benchmark_results/
+translated_chunks/
+test_audio/*.wav
+test_input.mp4
+*.pcm
+
+# Python cache
+agents/__pycache__/
+*.pyc
